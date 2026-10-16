@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable as RNPressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 import Animated, {
@@ -24,6 +24,7 @@ import { useCoolBox } from '../state/useCoolBox';
 import { CoolBoxFridge } from '../components/fridge/CoolBoxFridge';
 import { CAVITY, VB_H, VB_W } from '../components/fridge/geometry';
 import type { AnimValue } from '../components/fridge/animTypes';
+import type { SharedValue } from 'react-native-reanimated';
 
 /**
  * Timeline (ms). One continuous take:
@@ -39,13 +40,14 @@ import type { AnimValue } from '../components/fridge/animTypes';
 const T = { press: 0, wake: 90, lock: 520, door: 640, camA: 300, camAEnd: 0.2, camADur: 900, camBDur: 1050, home: 2150 };
 
 interface Props {
-  intro: { value: number };
+  intro: SharedValue<number>;
   onDone: () => void;
 }
 
 export function SplashScreen({ intro, onDone }: Props) {
   const l = useLayout();
   const started = useRef(false);
+  const [isStarted, setStarted] = useState(false);
   const temp = useCoolBox((s) => s.currentTemperature);
 
   const door = useSharedValue(0);
@@ -69,6 +71,7 @@ export function SplashScreen({ intro, onDone }: Props) {
   const start = () => {
     if (started.current) return;
     started.current = true;
+    setStarted(true);
     cancelAnimation(rest);
 
     // PHASE 1 — tactile press (compress → past rest → settle) and a blue bloom
@@ -105,12 +108,12 @@ export function SplashScreen({ intro, onDone }: Props) {
 
     // PHASE 6 — Home emerges from the light
     fade.value = withDelay(T.home, withTiming(1, { duration: 760, easing: Motion.easing.ui }));
-    intro.value = withDelay(
+    intro.set(withDelay(
       T.home + 60,
       withTiming(1, { duration: 1150, easing: Motion.easing.product }, (done) => {
         if (done) runOnJS(onDone)();
       }),
-    );
+    ));
   };
 
   const fw = l.splashFridgeWidth;
@@ -172,7 +175,7 @@ export function SplashScreen({ intro, onDone }: Props) {
   const heroY = hero ? hero.y + hero.h / 2 : l.insets.top + 110;
 
   return (
-    <Animated.View style={[StyleSheet.absoluteFill, rootStyle]} pointerEvents={started.current ? 'none' : 'auto'}>
+    <Animated.View style={[StyleSheet.absoluteFill, rootStyle]} pointerEvents={isStarted ? 'none' : 'auto'}>
       <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: colors.background }, bgStyle]} />
       <Halo glow={activation} cam={cam} />
 
@@ -271,8 +274,17 @@ const MOTES = 11;
 function ColdMotes({ cam, width, height }: { cam: AnimValue; width: number; height: number }) {
   const specs = useMemo(() => {
     let seed = 11;
-    const r = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-    return Array.from({ length: MOTES }, () => ({ x: r() * width, y: r() * height, d: 0.5 + r() * 1.1, size: 2 + r() * 3 }));
+    const samples: number[] = [];
+    for (let index = 0; index < MOTES * 4; index++) {
+      seed = (seed * 16807) % 2147483647;
+      samples.push(seed / 2147483647);
+    }
+    return Array.from({ length: MOTES }, (_, index) => ({
+      x: samples[index * 4] * width,
+      y: samples[index * 4 + 1] * height,
+      d: 0.5 + samples[index * 4 + 2] * 1.1,
+      size: 2 + samples[index * 4 + 3] * 3,
+    }));
   }, [width, height]);
   return (
     <>

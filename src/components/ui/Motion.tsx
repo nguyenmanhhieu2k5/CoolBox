@@ -34,11 +34,11 @@ export function SpinningFan({ on, speed, size = 24, color }: { on: boolean; spee
     if (target > 0) {
       frame.setActive(true);
       running.value = true;
-      omega.value = withTiming(target, { duration: Motion.physics.fanSpinUpMs, easing: Easing.out(Easing.quad) });
+      omega.set(withTiming(target, { duration: Motion.physics.fanSpinUpMs, easing: Easing.out(Easing.quad) }));
     } else {
-      omega.value = withTiming(0, { duration: Motion.physics.fanSpinDownMs, easing: Easing.out(Easing.cubic) }, (done) => {
+      omega.set(withTiming(0, { duration: Motion.physics.fanSpinDownMs, easing: Easing.out(Easing.cubic) }, (done) => {
         if (done) runOnJS(frame.setActive)(false);
-      });
+      }));
     }
   }, [on, Math.round(speed / 10)]);
 

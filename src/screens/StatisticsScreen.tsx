@@ -82,7 +82,8 @@ export function StatisticsScreen({ active }: { active: boolean }) {
   const [range, setRange] = useState<Range>('24h');
   const [chartW, setChartW] = useState(320);
 
-  const data = useMemo(() => series(metric, range, Math.round(current * 10) / 10), [metric, range, Math.round(current * 10)]);
+  const roundedCurrent = Math.round(current * 10) / 10;
+  const data = useMemo(() => series(metric, range, roundedCurrent), [metric, range, roundedCurrent]);
   const min = Math.min(...data);
   const max = Math.max(...data);
   const avg = data.reduce((a, b) => a + b, 0) / data.length;

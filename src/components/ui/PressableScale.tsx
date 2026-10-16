@@ -26,17 +26,17 @@ export function PressableScale({ style, pressedScale = Motion.press.down, onPres
     <AnimatedPressable
       {...rest}
       onPressIn={(e: GestureResponderEvent) => {
-        scale.value = withTiming(pressedScale, { duration: Motion.press.downMs });
-        dim.value = withTiming(0.94, { duration: Motion.press.downMs });
+        scale.set(withTiming(pressedScale, { duration: Motion.press.downMs }));
+        dim.set(withTiming(0.94, { duration: Motion.press.downMs }));
         onPressIn?.(e);
       }}
       onPressOut={(e: GestureResponderEvent) => {
         // physical release: springs past rest by a hair, then settles
-        scale.value = withSequence(
+        scale.set(withSequence(
           withTiming(Motion.press.overshoot, { duration: Motion.press.upMs, easing: Motion.easing.decelerate }),
           withSpring(1, Motion.spring.press),
-        );
-        dim.value = withTiming(1, { duration: 160 });
+        ));
+        dim.set(withTiming(1, { duration: 160 }));
         onPressOut?.(e);
       }}
       style={[style, animated]}

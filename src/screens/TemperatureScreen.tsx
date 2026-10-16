@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { PanResponder, Text, View } from 'react-native';
 import Svg, { Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
 import Animated, { useAnimatedProps, useAnimatedStyle, useSharedValue, withDelay, withSpring, withTiming } from 'react-native-reanimated';
@@ -58,29 +58,28 @@ export function TemperatureScreen() {
   const currentMark = useAnimatedStyle(() => ({ opacity: wake.value, transform: [{ rotate: `${START + cur.value * SWEEP}deg` }] }));
 
   // drag the dial
-  const down = useRef({ x: 0, y: 0 });
-  const dial = useRef(
-    PanResponder.create({
+  const dial = useMemo(() => {
+    const down = { x: 0, y: 0 };
+    function apply(x: number, y: number) {
+      const cc = size / 2;
+      const ang = (Math.atan2(y - cc, x - cc) * 180) / Math.PI;
+      let rel = (ang - START + 720) % 360;
+      if (rel > SWEEP) rel = rel > SWEEP + (360 - SWEEP) / 2 ? 0 : SWEEP;
+      const t = Math.round((TARGET_MIN + (rel / SWEEP) * (TARGET_MAX - TARGET_MIN)) * 2) / 2;
+      actions.setTarget(t);
+    }
+    return PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
       onPanResponderTerminationRequest: () => false,
       onPanResponderGrant: (e) => {
-        down.current = { x: e.nativeEvent.locationX, y: e.nativeEvent.locationY };
-        apply(down.current.x, down.current.y);
+        down.x = e.nativeEvent.locationX;
+        down.y = e.nativeEvent.locationY;
+        apply(down.x, down.y);
       },
-      onPanResponderMove: (_, g) => apply(down.current.x + g.dx, down.current.y + g.dy),
-    }),
-  ).current;
-  const sizeRef = useRef(size);
-  sizeRef.current = size;
-  function apply(x: number, y: number) {
-    const cc = sizeRef.current / 2;
-    const ang = (Math.atan2(y - cc, x - cc) * 180) / Math.PI;
-    let rel = (ang - START + 720) % 360;
-    if (rel > SWEEP) rel = rel > SWEEP + (360 - SWEEP) / 2 ? 0 : SWEEP;
-    const t = Math.round((TARGET_MIN + (rel / SWEEP) * (TARGET_MAX - TARGET_MIN)) * 2) / 2;
-    actions.setTarget(t);
-  }
+      onPanResponderMove: (_, g) => apply(down.x + g.dx, down.y + g.dy),
+    });
+  }, [size]);
 
   const step = (d: number) => actions.setTarget(Math.round((target + d) * 2) / 2);
 

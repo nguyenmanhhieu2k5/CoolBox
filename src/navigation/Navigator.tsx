@@ -69,7 +69,7 @@ function initialParams() {
  */
 export function Navigator() {
   const layout = useLayout();
-  const params = useMemo(initialParams, []);
+  const params = useMemo(() => initialParams(), []);
   const [splashDone, setSplashDone] = useState(!!params.skip);
   const [tab, setTabState] = useState<TabKey>(params.tab && TABS.includes(params.tab) ? params.tab : 'home');
   const [visited, setVisited] = useState<TabKey[]>(['home', ...(params.tab ? [params.tab] : [])]);
@@ -87,15 +87,15 @@ export function Navigator() {
   const setTab = useCallback((t: TabKey) => {
     setTabState(t);
     setVisited((v) => (v.includes(t) ? v : [...v, t]));
-    targetIdx.value = TABS.indexOf(t);
+    targetIdx.set(TABS.indexOf(t));
     // the indicator and the content travel together on one physical spring
-    position.value = withSpring(TABS.indexOf(t), Motion.spring.settle);
+    position.set(withSpring(TABS.indexOf(t), Motion.spring.settle));
   }, [position, targetIdx]);
 
   const push = useCallback((route: RouteKey, origin?: { x: number; y: number }) => {
     setStack((s) => [...s, { id: idRef.current++, route, closing: false, origin }]);
-    hidden.value = withTiming(1, { duration: 260 });
-    depth.value = withTiming(1, { duration: Motion.navigation.stackMs, easing: Motion.easing.ui });
+    hidden.set(withTiming(1, { duration: 260 }));
+    depth.set(withTiming(1, { duration: Motion.navigation.stackMs, easing: Motion.easing.ui }));
   }, [hidden, depth]);
 
   const pop = useCallback(() => {
@@ -105,8 +105,8 @@ export function Navigator() {
       return s.map((it, i) => (i === idx ? { ...it, closing: true } : it));
     });
     if (stack.filter((i) => !i.closing).length <= 1) {
-      hidden.value = withTiming(0, { duration: 340 });
-      depth.value = withTiming(0, { duration: Motion.navigation.stackMs, easing: Motion.easing.ui });
+      hidden.set(withTiming(0, { duration: 340 }));
+      depth.set(withTiming(0, { duration: Motion.navigation.stackMs, easing: Motion.easing.ui }));
     }
   }, [stack, hidden, depth]);
 
@@ -120,7 +120,7 @@ export function Navigator() {
     transform: [{ scale: interpolate(depth.value, [0, 1], [1, 0.94]) }],
   }));
 
-  const finishSplash = useCallback(() => setSplashDone(true), []);
+  const finishSplash = useCallback(() => setSplashDone(true), [setSplashDone]);
 
   return (
     <NavProvider value={nav}>
