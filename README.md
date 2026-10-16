@@ -105,14 +105,31 @@ Khi chạy trên web, có thể dùng tham số URL để test nhanh: `?skip=1&t
 
 ## ⚠️ Lỗi đã biết / Cần sửa
 
-- **Animation bị lỗi render trên bản web** (`npm run web`). Trên ứng dụng di động (Android / iOS), phần render đã ổn định.
-- **Hướng xử lý:** cần rà soát và chỉnh lại phần thư viện, nhất là các thư viện liên quan đến animation và đồ họa trên web:
-  - `react-native-reanimated` và `react-native-worklets`
-  - `react-native-svg`
-  - `react-native-web`
-- Cần kiểm tra các phiên bản có tương thích với Expo SDK 57 không (`npx expo-doctor`, `npx expo install --fix`).
+- Có báo cáo lỗi render animation trên web (`npm run web`), nhưng chưa xác định nguyên nhân bằng log runtime. Không coi lỗi render web là bằng chứng build Android/iOS thất bại.
+- Kiểm tra riêng từng lớp: `npx expo-doctor` cho cấu hình/dependency, `npx expo export --platform all` cho bundle, APK trên thiết bị thật cho native runtime và animation.
+- Bundle thành công chưa đảm bảo APK biên dịch hoặc animation chạy đúng. Cần xác minh trên thiết bị trước khi kết luận mobile ổn định.
 
-Trong lúc chưa sửa xong, nên test animation trên điện thoại thật hoặc giả lập thay vì trình duyệt.
+## Build APK thử nghiệm
+
+Profile `preview` trong `eas.json` tạo APK cài trực tiếp trên Android. Giữ nguyên Reanimated, Worklets và các animation; không cần dev server khi chạy APK này.
+
+```bash
+npx eas-cli@latest login
+npx eas-cli@latest build --platform android --profile preview
+```
+
+### APK đã xác minh (16/10/2026)
+
+- EAS build `925b3e1b-487e-4bd1-b710-d4e6bd6e8e13`: `FINISHED`; Gradle `:app:assembleRelease` thành công.
+- APK tại máy: `dist/android/CoolBox-1.0.0.apk` (87,872,012 bytes), application ID `com.ntduong.coolbox`, version `1.0.0` (1).
+- `apksigner verify --verbose --print-certs` thành công, chữ ký APK v2; min SDK 24, target SDK 36.
+- SHA-256: `EDDFD796118CB2227C92FB676F251AE0DA1F78EFAABD43493A04B220E8441E07`.
+- Log EAS: `dist/android/eas-0.log`; metadata: `dist/android/build-info.json`. Thư mục `dist/` không được commit.
+- `npm run typecheck`, `npx expo-doctor` (21/21) và `npx expo install --check` đều đạt.
+- Lint đã bỏ qua bundle sinh trong `.expo/`; mã nguồn vẫn còn 23 lỗi, 38 cảnh báo. Xem `dist/android/lint.log`; không coi lint là đã đạt.
+- Chưa xác minh runtime/animation trên Android: chưa có thiết bị ADB hay Android Virtual Device. Cần cài APK và test splash, cửa tủ, quạt, chuyển màn hình, slider và núm nhiệt độ trước khi phát hành.
+
+Lần build đầu cần liên kết dự án EAS, chọn application ID Android và cấu hình keystore qua CLI. Build cloud tải source lên Expo và có thể dùng hạn mức tài khoản; chưa có APK chỉ từ lệnh export bundle.
 
 ## 🛠️ Phát triển
 

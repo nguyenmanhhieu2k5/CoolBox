@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "main": "index.ts",
   "dependencies": {
-    "@expo/metro-runtime": "~57.0.16",
-    "expo": "~57.0.26",
+    "@expo/metro-runtime": "~57.0.17",
+    "expo": "~57.0.30",
     "expo-status-bar": "~57.0.1",
     "lucide-react-native": "^1.51.0",
     "react": "19.2.3",
@@ -18,6 +18,8 @@
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~57.0.2",
     "typescript": "~6.0.3"
   },
   "scripts": {
@@ -25,7 +27,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "typecheck": "node --stack-size=8000 node_modules/typescript/bin/tsc --noEmit"
+    "typecheck": "node --stack-size=8000 node_modules/typescript/bin/tsc --noEmit",
+    "lint": "expo lint"
   },
   "private": true
 }

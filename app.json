@@ -1,18 +1,16 @@
 {
   "expo": {
     "name": "CoolBox",
-    "slug": "coolbox",
+    "slug": "tung-duong",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
-    "splash": {
-      "backgroundColor": "#F5F7FA"
-    },
     "ios": {
       "supportsTablet": true
     },
     "android": {
+      "package": "com.ntduong.coolbox",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#F5F7FA"
       }
@@ -20,6 +18,12 @@
     "web": {
       "bundler": "metro",
       "output": "single"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "e28c0528-2009-45d3-917f-e2ed428186ba"
+      }
+    },
+    "owner": "ntduongs-team"
   }
 }

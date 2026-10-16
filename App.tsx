@@ -1,9 +1,14 @@
 import React, { useEffect } from 'react';
+import { LogBox } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ReduceMotion, ReducedMotionConfig } from 'react-native-reanimated';
 import { coolBox } from './src/services';
 import { Navigator } from './src/navigation/Navigator';
+
+if (__DEV__) {
+  LogBox.ignoreLogs(["[Reanimated] Reduced motion setting is overwritten with mode 'never'."]);
+}
 
 export default function App() {
   // The service is the single source of device state; start/stop its simulation with the app.
